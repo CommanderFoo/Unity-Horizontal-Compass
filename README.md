@@ -6,18 +6,18 @@ A customizable horizontal compass UI for Unity games using UIToolkit. Displays p
 
 ## Features
 
-- Smooth horizontal compass bar with tick marks and cardinal directions
-- Real-time heading tracking based on camera rotation
-- Waypoint marker system with custom icons and colors
-- Distance display for each marker
-- Fully customizable via Inspector and USS stylesheets
-- Editor preview mode for testing without entering Play mode
-- Lightweight UI Toolkit based rendering
+- Smooth horizontal compass bar with tick marks and cardinal directions.
+- Real-time heading tracking based on camera rotation.
+- Waypoint marker system with custom icons and colors.
+- Distance display for each marker.
+- Fully customizable via Inspector and USS stylesheets.
+- Editor preview mode for testing without entering Play mode.
+- Lightweight UI Toolkit based rendering.
 
 ## Installation
 
 1. Download from the Releases page and import into your project.
-2. Ensure your project supports UI Toolkit (Unity 2021.2+)
+2. Ensure your project supports UI Toolkit (Unity 2021.2+).
 
 ## Quick Start
 
@@ -32,7 +32,7 @@ Make sure you have a UI Document that the Compass can use.
 ### 3. Add the Compass Controller
 
 1. Add the **Compass_Controller** script to a GameObject.
-2. Add the UI Document reference
+2. Add the UI Document reference.
 
 ![Compass Controller](Images/compass-controller-inspector.png)
 
