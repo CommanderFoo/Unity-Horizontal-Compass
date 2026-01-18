@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 51e8050f26ab504469d218c927558c5e
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 112000000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267961
+  packageName: 'Starter Assets: Character Controllers | URP'
+  packageVersion: 2.0.2
+  assetPath: Assets/Starter Assets/Sample/ThirdPersonController/Playground/LightingData.asset
+  uploadId: 721456

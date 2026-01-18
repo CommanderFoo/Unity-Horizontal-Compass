@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 8a7437817844dce4894b049de73b75f2
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267961
+  packageName: 'Starter Assets: Character Controllers | URP'
+  packageVersion: 2.0.2
+  assetPath: Assets/Starter Assets/Sample/Environment/Prefabs/Ramp_Prefab.prefab
+  uploadId: 721456

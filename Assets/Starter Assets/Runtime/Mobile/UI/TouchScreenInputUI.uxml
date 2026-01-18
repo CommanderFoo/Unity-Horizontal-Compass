@@ -1,0 +1,25 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/Starter%20Assets/Runtime/Mobile/UI/ToucScreenInputStyle.uss?fileID=7433441132597879392&amp;guid=65f131e357a5ced4b9f5d34f036bd440&amp;type=3#ToucScreenInputStyle" />
+    <ui:VisualElement name="MobileInput" style="height: 100%; width: 100%; flex-shrink: 0; flex-grow: 1;">
+        <ui:VisualElement name="JoystickMove">
+            <ui:VisualElement name="JoystickBackground">
+                <ui:VisualElement name="JoystickHandle" picking-mode="Ignore" usage-hints="DynamicTransform" class="touchscreen-button">
+                    <ui:VisualElement name="JoystickIcon" class="button-icon" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="JoystickLook">
+            <ui:VisualElement name="JoystickBackground">
+                <ui:VisualElement name="JoystickHandle" picking-mode="Ignore" usage-hints="DynamicTransform" class="touchscreen-button">
+                    <ui:VisualElement name="JoystickIcon" class="button-icon" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="ButtonJump" class="touchscreen-button">
+            <ui:VisualElement name="ButtonImage" class="button-icon" style="flex-grow: 1;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="ButtonSprint" class="touchscreen-button">
+            <ui:VisualElement name="ButtonImage" class="button-icon" style="flex-grow: 1;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,0 +1,200 @@
+/* region Compass Container */
+
+.compass-wrapper {
+	--compass-width: 800px;
+	--compass-top: 30px;
+
+	/* Font must be explicitly defined when no theme stylesheet is used */
+	-unity-font: url("../Fonts/Roboto-Regular.ttf");
+
+	/* Reset theme-dependent properties */
+	margin: 0;
+	padding: 0;
+	border-width: 0;
+
+	position: absolute;
+	width: var(--compass-width);
+	top: var(--compass-top);
+	left: 50%;
+	translate: -50% 0;
+	overflow: visible;
+}
+
+.compass-container {
+	--compass-height: 32px;
+	--compass-bg: rgba(0, 0, 0, 0.8);
+
+	position: relative;
+	width: 100%;
+	height: var(--compass-height);
+	background-color: var(--compass-bg);
+	overflow: hidden;
+	align-items: center;
+	justify-content: center;
+}
+
+.compass-strip {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	overflow: visible;
+}
+
+/* endregion */
+
+/* region Compass Tick Marks */
+
+.compass-tick {
+	--tick-width: 1px;
+	--tick-color: rgba(255, 255, 255, 0.5);
+
+	position: absolute;
+	width: var(--tick-width);
+	background-color: var(--tick-color);
+	bottom: 0;
+}
+
+.compass-tick-small {
+	--tick-small-height: 6px;
+
+	height: var(--tick-small-height);
+}
+
+.compass-tick-medium {
+	--tick-medium-height: 12px;
+	--tick-medium-color: rgba(255, 255, 255, 0.7);
+
+	height: var(--tick-medium-height);
+	background-color: var(--tick-medium-color);
+}
+
+.compass-tick-large {
+	--tick-large-height: 14px;
+	--tick-large-width: 2px;
+	--tick-large-color: rgba(255, 255, 255, 1);
+
+	height: var(--tick-large-height);
+	width: var(--tick-large-width);
+	background-color: var(--tick-large-color);
+}
+
+/* endregion */
+
+/* region Compass Labels */
+
+.compass-label {
+	position: absolute;
+	color: rgb(255, 255, 255);
+	font-size: 10px;
+	-unity-font-style: bold;
+	-unity-text-align: middle-center;
+	top: 2px;
+	translate: -50% 0;
+	-unity-text-outline-width: 1px;
+	-unity-text-outline-color: rgb(0, 0, 0);
+
+	/* Reset theme-dependent properties */
+	margin: 0;
+	padding: 0;
+	border-width: 0;
+	white-space: nowrap;
+}
+
+.compass-label-cardinal {
+	font-size: 13px;
+}
+
+.compass-degree {
+	position: absolute;
+	color: rgba(255, 255, 255, 0.9);
+	font-size: 11px;
+	-unity-text-align: middle-center;
+	top: 7px;
+	translate: -50% 0;
+	-unity-text-outline-width: 0.5px;
+	-unity-text-outline-color: rgb(0, 0, 0);
+
+	/* Reset theme-dependent properties */
+	margin: 0;
+	padding: 0;
+	border-width: 0;
+	white-space: nowrap;
+}
+
+/* endregion */
+
+/* region Compass Center Indicator */
+
+.compass-center-indicator {
+	--indicator-width: 2px;
+	--indicator-height: 100%;
+	--indicator-color: rgb(255, 200, 50);
+
+	position: absolute;
+	width: var(--indicator-width);
+	height: var(--indicator-height);
+	left: 50%;
+	translate: -50% 0;
+	background-color: var(--indicator-color);
+}
+
+/* endregion */
+
+/* region Compass Markers (Waypoints) */
+
+.compass-markers {
+	position: absolute;
+	width: 100%;
+	height: 32px;
+	top: 0;
+	left: 0;
+	overflow: visible;
+}
+
+.compass-marker {
+	position: absolute;
+	width: 24px;
+	height: 40px;
+	flex-direction: column;
+	align-items: center;
+	top: 18px;
+	translate: -50% 0;
+	overflow: visible;
+}
+
+.compass-marker-icon {
+	width: 12px;
+	height: 12px;
+	flex-shrink: 0;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	border-radius: 8px;
+	border-width: 1px;
+	border-color: rgb(255, 255, 255);
+}
+
+.compass-marker-distance {
+	--marker-distance-color: rgb(255, 255, 255);
+	--marker-distance-font-size: 10px;
+	--marker-distance-bg: rgba(0, 0, 0, 0.6);
+
+	position: absolute;
+	top: 17px;
+	left: 50%;
+	translate: -50% 0;
+	color: var(--marker-distance-color);
+	font-size: var(--marker-distance-font-size);
+	-unity-text-align: middle-center;
+	padding: 2px 4px;
+	border-width: 0;
+	white-space: nowrap;
+	background-color: var(--marker-distance-bg);
+	border-radius: 3px;
+}
+
+.compass-marker-hidden {
+	display: none;
+}
+
+/* endregion */

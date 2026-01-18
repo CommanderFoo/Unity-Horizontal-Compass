@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 7d001cacf887eb14cbf269a09e3ec3ba
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267961
+  packageName: 'Starter Assets: Character Controllers | URP'
+  packageVersion: 2.0.2
+  assetPath: Assets/Starter Assets/Runtime/Mobile/Prefabs/UI_TouchScreenInput.prefab
+  uploadId: 721456

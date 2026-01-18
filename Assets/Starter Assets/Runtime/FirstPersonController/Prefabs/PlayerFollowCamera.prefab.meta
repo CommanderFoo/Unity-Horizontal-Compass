@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 9c489a8547f4d9e4387da15a4ff82c81
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267961
+  packageName: 'Starter Assets: Character Controllers | URP'
+  packageVersion: 2.0.2
+  assetPath: Assets/Starter Assets/Runtime/FirstPersonController/Prefabs/PlayerFollowCamera.prefab
+  uploadId: 721456

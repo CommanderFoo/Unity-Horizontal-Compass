@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 55919ac34a26952479f3fc91f777b2fa
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267961
+  packageName: 'Starter Assets: Character Controllers | URP'
+  packageVersion: 2.0.2
+  assetPath: Assets/Starter Assets/Runtime/FirstPersonController/Scripts/FirstPersonController.cs
+  uploadId: 721456

@@ -1,0 +1,93 @@
+.touchscreen-button {
+    margin: 0;
+    padding: 0;
+    
+    background-color: rgba(0,0,0,0);
+    background-image: url("./Images/UI_Circle_Bevel_Base.png#UI_Circle_Bevel_Base");
+}
+
+#JoystickMove {
+    position: absolute;
+    width: 330px;
+    height: 330px;
+    
+    left: 25px;
+    bottom: 15px;
+}
+
+#JoystickLook {
+    position: absolute;
+    width: 240px;
+    height: 240px;
+
+    right: 55px;
+    bottom: 245px;
+}
+
+#JoystickBackground {
+    flex-grow: 1.0;
+    
+    background-image: url("./Images/UI_Circle_Faded.png#UI_Circle_Faded");
+}
+
+#JoystickHandle {
+    width: 130px;
+    height: 130px;
+    
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    translate: -50%;
+}
+
+.button-icon {
+    
+    position: absolute;
+    
+    top: 50%;
+    left: 50%;
+    
+    translate: -50%;
+    
+    width: 70px;
+    height: 70px;
+}
+
+#JoystickMove #JoystickIcon {
+    background-image: url("./Images/UI_Icon_Move.png#UI_Icon_Move");
+}
+
+#JoystickLook #JoystickIcon {
+    background-image: url("./Images/UI_Icon_Look.png#UI_Icon_Look");
+}
+
+#ButtonJump {
+    width: 110px;
+    height: 110px;
+    
+    position: absolute;
+    
+    right : 45px;
+    bottom : 125px;
+}
+
+#ButtonSprint {
+    width: 110px;
+    height: 110px;
+
+    position: absolute;
+
+    right : 130px;
+    bottom : 25px;
+}
+
+
+#ButtonJump #ButtonImage {
+    background-image: url("./Images/UI_Icon_Jump.png#UI_Icon_Jump");
+}
+
+#ButtonSprint #ButtonImage {
+    background-image: url("./Images/UI_Icon_Sprint.png#UI_Icon_Sprint");
+}

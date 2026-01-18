@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: e5d7b87d422ee0f478ee09eb32e24f4e
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267961
+  packageName: 'Starter Assets: Character Controllers | URP'
+  packageVersion: 2.0.2
+  assetPath: Assets/Starter Assets/Sample/Environment/Prefabs/Tunnel_Prefab.prefab
+  uploadId: 721456

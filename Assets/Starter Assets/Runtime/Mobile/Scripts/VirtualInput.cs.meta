@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: ed06e3b6fec5ecc4696004cedc31f0ac
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267961
+  packageName: 'Starter Assets: Character Controllers | URP'
+  packageVersion: 2.0.2
+  assetPath: Assets/Starter Assets/Runtime/Mobile/Scripts/VirtualInput.cs
+  uploadId: 721456

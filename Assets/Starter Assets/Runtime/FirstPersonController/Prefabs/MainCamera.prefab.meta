@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 2d3a85ecde41a8246a79669975912b74
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267961
+  packageName: 'Starter Assets: Character Controllers | URP'
+  packageVersion: 2.0.2
+  assetPath: Assets/Starter Assets/Runtime/FirstPersonController/Prefabs/MainCamera.prefab
+  uploadId: 721456

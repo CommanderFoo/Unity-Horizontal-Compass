@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: a9ef32e8d7c7bb84c8730e7347b637de
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267961
+  packageName: 'Starter Assets: Character Controllers | URP'
+  packageVersion: 2.0.2
+  assetPath: Assets/Starter Assets/Sample/Environment/Prefabs/Ramp_100x100x200_Mesh.prefab
+  uploadId: 721456
