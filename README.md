@@ -16,21 +16,27 @@ A customizable horizontal compass UI for Unity games using UIToolkit. Displays p
 
 ## Installation
 
-1. Import the `Horizontal Compass` folder into your Unity project's Assets directory
-2. Ensure your project supports UIToolkit (Unity 2021.2+)
+1. Download from the Releases page and import into your project.
+2. Ensure your project supports UI Toolkit (Unity 2021.2+)
 
 ## Quick Start
 
-Download from the Releases page.
+### 1. Create UI Document
 
-### 1. Add the Compass Controller
+Make sure you have a UI Document that the Compass can use.
 
-1. Add the **Compass_Controller** script to the same GameObject
+### 2. Add Compass UI Toolkit Component.
+
+<img width="1929" height="971" alt="image" src="https://github.com/user-attachments/assets/633115d8-6983-45a8-bf23-04e6cdc3fa3d" />
+
+### 3. Add the Compass Controller
+
+1. Add the **Compass_Controller** script to a GameObject.
 2. Add the UI Document reference
 
 ![Compass Controller](Images/compass-controller-inspector.png)
 
-### 3. Configure Settings
+### 4. Configure Settings
 
 Adjust the compass settings in the Inspector to match your game's needs.
 
