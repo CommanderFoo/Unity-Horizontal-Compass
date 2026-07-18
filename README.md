@@ -4,6 +4,8 @@ A customizable horizontal compass UI for Unity games using UIToolkit. Displays p
 
 ![Compass Preview](Images/compass-preview.png)
 
+![Compass Demo](Images/compass-preview.gif)
+
 ## Features
 
 - Smooth horizontal compass bar with tick marks and cardinal directions.
