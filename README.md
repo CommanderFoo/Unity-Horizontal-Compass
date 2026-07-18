@@ -25,6 +25,7 @@ A customizable horizontal compass UI for Unity games using UIToolkit. Displays p
 
 | Unity Version | Status |
 |---------------|--------|
+| 6000.5 (6.5)  | Working |
 | 6000.4 (6.4)  | Working |
 | 6000.3 (6.3)  | Working |
 
