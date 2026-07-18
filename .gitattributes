@@ -1,0 +1,29 @@
+# Normalize line endings to avoid noisy whitespace-only diffs across platforms.
+# Text files are stored with LF in the repo; Git handles checkout per-platform.
+* text=auto eol=lf
+
+# Explicit text types (source, Unity assets, docs)
+*.cs        text eol=lf
+*.uss       text eol=lf
+*.uxml      text eol=lf
+*.meta      text eol=lf
+*.asset     text eol=lf
+*.asmdef    text eol=lf
+*.json      text eol=lf
+*.md        text eol=lf
+*.txt       text eol=lf
+*.gitignore text eol=lf
+*.gitattributes text eol=lf
+
+# Binary assets (never touch line endings)
+*.ttf   binary
+*.otf   binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.psd   binary
+*.fbx   binary
+*.wav   binary
+*.mp3   binary
+*.ogg   binary

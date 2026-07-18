@@ -14,6 +14,20 @@ A customizable horizontal compass UI for Unity games using UIToolkit. Displays p
 - Editor preview mode for testing without entering Play mode.
 - Lightweight UI Toolkit based rendering.
 
+## Requirements
+
+- Developed for **Unity 6**. Older versions (Unity 2021.2+, when UI Toolkit runtime support landed) may work but are untested. See [Tested With](#tested-with).
+- Built for the Universal Render Pipeline (URP).
+
+## Tested With
+
+| Unity Version | Status |
+|---------------|--------|
+| 6000.4 (6.4)  | Working |
+| 6000.3 (6.3)  | Working |
+
+Other versions may work but haven't been verified. If you test on another version, a PR updating this table is welcome.
+
 ## Installation
 
 1. Download from the Releases page and import into your project.
