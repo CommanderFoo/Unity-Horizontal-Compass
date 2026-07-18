@@ -5,7 +5,7 @@ Thanks for your interest in improving this project. Contributions of all sizes a
 ## Getting Started
 
 1. **Fork** the repository and clone your fork.
-2. **Open the project** in Unity. It is developed with **Unity 6** (see [Tested With](README.md#tested-with) in the README for verified versions).
+2. **Open the project** in Unity. It requires **Unity 6.5 or newer** (it uses the Panel Renderer component; see [Tested With](README.md#tested-with) in the README for verified versions).
 3. The compass lives under `Assets/Horizontal Compass/`. The demo lives in `Assets/Scenes/Example.unity`.
 
 ## Making Changes

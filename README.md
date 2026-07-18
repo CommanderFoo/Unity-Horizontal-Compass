@@ -18,29 +18,29 @@ A customizable horizontal compass UI for Unity games using UIToolkit. Displays p
 
 ## Requirements
 
-- Developed for **Unity 6**. Older versions (Unity 2021.2+, when UI Toolkit runtime support landed) may work but are untested. See [Tested With](#tested-with).
+- Requires **Unity 6.5 or newer**. The compass uses the Panel Renderer component, which was introduced in Unity 6.5.
 - Built for the Universal Render Pipeline (URP).
+
+Need an older Unity version? The last release built on the UI Document component (Unity 6.3 and 6.4) is available at the `unity-6.4` tag.
 
 ## Tested With
 
 | Unity Version | Status |
 |---------------|--------|
 | 6000.5 (6.5)  | Working |
-| 6000.4 (6.4)  | Working |
-| 6000.3 (6.3)  | Working |
 
 Other versions may work but haven't been verified. If you test on another version, a PR updating this table is welcome.
 
 ## Installation
 
 1. Download from the Releases page and import into your project.
-2. Ensure your project supports UI Toolkit (Unity 2021.2+).
+2. Ensure your project is on Unity 6.5 or newer.
 
 ## Quick Start
 
-### 1. Create UI Document
+### 1. Add a Panel Renderer
 
-Make sure you have a UI Document that the Compass can use.
+Make sure you have a Panel Renderer component that the Compass can use.
 
 ### 2. Add Compass UI Toolkit Component.
 
@@ -49,7 +49,7 @@ Make sure you have a UI Document that the Compass can use.
 ### 3. Add the Compass Controller
 
 1. Add the **Compass_Controller** script to a GameObject.
-2. Add the UI Document reference.
+2. Add the Panel Renderer reference.
 
 ![Compass Controller](Images/compass-controller-inspector.png)
 
@@ -63,7 +63,7 @@ Adjust the compass settings in the Inspector to match your game's needs.
 
 | Setting | Description |
 |---------|-------------|
-| **UI Document** | Reference to the UIDocument component (auto-detected if on same GameObject) |
+| **Panel Renderer** | Reference to the PanelRenderer component (auto-detected if on same GameObject) |
 | **Compass Width** | Width of the compass bar in pixels. Should match `--compass-width` in USS |
 | **Compass FOV** | Field of view in degrees. Lower values zoom in, higher values show more of the world. Default: 150 |
 | **Editor Preview Heading** | Simulates player heading in edit mode (0=North, 90=East, 180=South, 270=West) |
@@ -89,6 +89,8 @@ The compass appearance can be fully customized by editing `UI/USS/Compass.uss`.
 ### Adding Markers via Script
 
 ```csharp
+using net.pixeldepth.horizontal_compass;
+
 // Get reference to the compass controller
 Compass_Controller compass = GetComponent<Compass_Controller>();
 
