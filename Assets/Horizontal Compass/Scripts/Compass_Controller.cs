@@ -6,681 +6,636 @@ using UnityEngine.UIElements;
 using UnityEditor;
 #endif
 
-/// <summary>
-/// Controls the horizontal compass UI, updating it based on camera rotation
-/// and managing waypoint markers.
-/// </summary>
-[ExecuteAlways]
-public class Compass_Controller : MonoBehaviour {
+namespace net.pixeldepth.horizontal_compass {
 
-	#region Serialized Fields
+	/// <summary>
+	/// Controls the horizontal compass UI, updating it based on camera rotation
+	/// and managing waypoint markers.
+	/// </summary>
+	[ExecuteAlways]
+	public class Compass_Controller : MonoBehaviour {
 
-	[Header("UI Reference")]
-	[SerializeField, Tooltip("Drag the UIDocument component that displays the compass.")]
-	private UIDocument ui_document;
+		#region Serialized Fields
 
-	[Header("Compass Settings")]
-	[SerializeField, Tooltip("How wide the compass bar is in pixels. Should match the width set in USS (--compass-width).")]
-	private float compass_width = 800f;
+		[Header("UI Reference")]
+		[SerializeField, Tooltip("Drag the PanelRenderer component that displays the compass.")]
+		private PanelRenderer panel_renderer;
 
-	[SerializeField, Tooltip("How much of the world the compass shows at once. Lower = zoomed in (ticks spread apart), Higher = zoomed out (ticks closer together). 150 means you see 150 degrees of the world.")]
-	private float compass_fov = 150f;
+		[Header("Compass Settings")]
+		[SerializeField, Tooltip("How wide the compass bar is in pixels. Should match the width set in USS (--compass-width).")]
+		private float compass_width = 800f;
 
-	[Header("Editor Preview")]
-	[SerializeField, Tooltip("Simulates where the player is looking in edit mode. 0 = North, 90 = East, 180 = South, 270 = West."), Range(0f, 360f)]
-	private float editor_preview_heading = 0f;
+		[SerializeField, Tooltip("How much of the world the compass shows at once. Lower = zoomed in (ticks spread apart), Higher = zoomed out (ticks closer together). 150 means you see 150 degrees of the world.")]
+		private float compass_fov = 150f;
 
-	[Header("Player Reference")]
-	[SerializeField, Tooltip("The player's position. Used to calculate distance to markers. If empty, uses the camera position.")]
-	private Transform player_transform;
+		[Header("Editor Preview")]
+		[SerializeField, Tooltip("Simulates where the player is looking in edit mode. 0 = North, 90 = East, 180 = South, 270 = West."), Range(0f, 360f)]
+		private float editor_preview_heading = 0f;
 
-	[Header("Markers")]
-	[SerializeField, Tooltip("Markers to display on the compass. Configure targets, icons, and colors.")]
-	private List<Compass_Marker_Data> editor_markers = new List<Compass_Marker_Data>();
+		[Header("Player Reference")]
+		[SerializeField, Tooltip("The player's position. Used to calculate distance to markers. If empty, uses the camera position.")]
+		private Transform player_transform;
 
-	#endregion
+		[Header("Markers")]
+		[SerializeField, Tooltip("Markers to display on the compass. Configure targets, icons, and colors.")]
+		private List<Compass_Marker_Data> editor_markers = new List<Compass_Marker_Data>();
 
-	#region Private State
+		#endregion
 
-	// UI Elements
-	private VisualElement compass_strip;
-	private VisualElement compass_markers;
+		#region Private State
 
-	// Editor marker runtime references
-	private List<Compass_Marker> editor_marker_instances = new List<Compass_Marker>();
+		// UI Elements
+		private VisualElement ui_root;
+		private VisualElement compass_strip;
+		private VisualElement compass_markers;
 
-	// Camera reference
-	private Transform cam_transform;
+		// Width last used to build the strip, so we only rebuild when it changes
+		private float applied_width = -1f;
 
-	// Compass calculations
-	private float pixels_per_degree;
-	private float strip_offset;
-	private float half_fov;
+		// Editor marker runtime references
+		private List<Compass_Marker> editor_marker_instances = new List<Compass_Marker>();
 
-	// Markers
-	private List<Compass_Marker> markers = new List<Compass_Marker>();
+		// Camera reference
+		private Transform cam_transform;
 
-	// Cardinal directions with their angles
-	private static readonly (string label, float angle)[] cardinals = {
-		("N", 0f),
-		("NE", 45f),
-		("E", 90f),
-		("SE", 135f),
-		("S", 180f),
-		("SW", 225f),
-		("W", 270f),
-		("NW", 315f)
-	};
+		// Compass calculations
+		private float pixels_per_degree;
+		private float strip_offset;
+		private float half_fov;
 
-	#endregion
+		// Markers
+		private List<Compass_Marker> markers = new List<Compass_Marker>();
 
-	#region Unity Lifecycle
+		// Cardinal directions with their angles
+		private static readonly (string label, float angle)[] cardinals = {
+			("N", 0f),
+			("NE", 45f),
+			("E", 90f),
+			("SE", 135f),
+			("S", 180f),
+			("SW", 225f),
+			("W", 270f),
+			("NW", 315f)
+		};
 
-	private void Awake() {
-		initialize_settings();
-	}
+		#endregion
 
-	private void OnEnable() {
-		initialize_settings();
+		#region Unity Lifecycle
 
-		if (ui_document == null) {
-			ui_document = GetComponent<UIDocument>();
+		private void Awake() {
+			initialize_settings();
 		}
 
-		if (ui_document != null && ui_document.rootVisualElement != null) {
-			ui_document.rootVisualElement.RegisterCallback<GeometryChangedEvent>(on_geometry_changed);
+		private void OnEnable() {
+			initialize_settings();
+
+			if (panel_renderer == null) {
+				panel_renderer = GetComponent<PanelRenderer>();
+			}
+
+			if (panel_renderer != null) {
+				panel_renderer.RegisterUIReloadCallback(on_ui_reload);
+			}
+
+			#if UNITY_EDITOR
+			EditorApplication.update += OnEditorUpdate;
+			#endif
 		}
 
-		#if UNITY_EDITOR
-		EditorApplication.update += OnEditorUpdate;
-		#endif
-	}
+		private void OnDisable() {
+			if (panel_renderer != null) {
+				panel_renderer.UnregisterUIReloadCallback(on_ui_reload);
+			}
 
-	#if UNITY_EDITOR
-	private void OnEditorUpdate() {
-		if (Application.isPlaying) {
-			return;
+			#if UNITY_EDITOR
+			EditorApplication.update -= OnEditorUpdate;
+			#endif
 		}
 
-		// Check if compass needs regeneration
-		if (ui_document == null) {
-			ui_document = GetComponent<UIDocument>();
-		}
+		// Fired by PanelRenderer whenever the UI is built or reloaded (including LiveReload).
+		// This is the single entry point for (re)initializing the compass from the UI tree.
+		private void on_ui_reload(PanelRenderer renderer, VisualElement root) {
+			ui_root = root;
 
-		if (ui_document == null || ui_document.rootVisualElement == null) {
-			return;
-		}
+			if (ui_root == null) {
+				return;
+			}
 
-		VisualElement root = ui_document.rootVisualElement;
+			// Track width once layout resolves, so the strip is rebuilt at the correct scale.
+			ui_root.UnregisterCallback<GeometryChangedEvent>(on_geometry_changed);
+			ui_root.RegisterCallback<GeometryChangedEvent>(on_geometry_changed);
 
-		if (root.childCount == 0) {
-			return;
-		}
-
-		// Re-fetch strip reference
-		VisualElement current_strip = root.Q<VisualElement>("compass-strip");
-
-		// Check if we need to reinitialize
-		bool needs_init = compass_strip == null ||
-		                  current_strip != compass_strip ||
-		                  (current_strip != null && current_strip.childCount == 0);
-
-		if (needs_init && current_strip != null) {
 			initialize_compass();
 			editor_marker_instances.Clear();
 			sync_editor_markers();
 		}
 
-		// Always update rotation and markers in editor
-		if (compass_strip != null) {
+		#if UNITY_EDITOR
+		private void OnEditorUpdate() {
+			if (Application.isPlaying) {
+				return;
+			}
+
+			if (compass_strip == null) {
+				return;
+			}
+
 			update_compass_rotation();
 			update_markers();
 		}
-	}
-	#endif
+		#endif
 
-	private void initialize_settings() {
-		if (Camera.main != null) {
-			cam_transform = Camera.main.transform;
+		private void initialize_settings() {
+			if (Camera.main != null) {
+				cam_transform = Camera.main.transform;
+			}
+
+			pixels_per_degree = compass_width / compass_fov;
+			half_fov = compass_fov * 0.5f;
+
+			// Strip needs to cover -180 to 540 degrees for seamless wrapping
+			// That's 720 degrees total
+			strip_offset = 180f * pixels_per_degree;
 		}
 
-		pixels_per_degree = compass_width / compass_fov;
-		half_fov = compass_fov * 0.5f;
+		private void Update() {
+			if (compass_strip == null) {
+				return;
+			}
 
-		// Strip needs to cover -180 to 540 degrees for seamless wrapping
-		// That's 720 degrees total
-		strip_offset = 180f * pixels_per_degree;
-	}
+			update_compass_rotation();
 
-	private void OnDisable() {
-		if (ui_document != null && ui_document.rootVisualElement != null) {
-			ui_document.rootVisualElement.UnregisterCallback<GeometryChangedEvent>(on_geometry_changed);
+			#if UNITY_EDITOR
+			// Only sync editor markers in edit mode (they don't change during play)
+			if (!Application.isPlaying) {
+				sync_editor_markers();
+			}
+			#endif
+
+			update_markers();
 		}
 
 		#if UNITY_EDITOR
-		EditorApplication.update -= OnEditorUpdate;
-		#endif
-	}
-
-	private void Update() {
-		// Try to initialize if not yet done
-		if (compass_strip == null || compass_markers == null) {
-			try_initialize();
-		}
-
-		// Regenerate if elements were cleared (e.g., USS reload)
-		if (compass_strip != null && compass_strip.childCount == 0) {
-			initialize_settings();
-			generate_compass_elements();
-			// Clear and recreate marker instances
-			editor_marker_instances.Clear();
-			sync_editor_markers();
-		}
-
-		update_compass_rotation();
-
-		#if UNITY_EDITOR
-		// Only sync editor markers in edit mode (they don't change during play)
-		if (!Application.isPlaying) {
-			sync_editor_markers();
-		}
-		#endif
-
-		update_markers();
-	}
-
-	private void try_initialize() {
-		if (ui_document == null) {
-			ui_document = GetComponent<UIDocument>();
-		}
-
-		if (ui_document == null || ui_document.rootVisualElement == null) {
-			return;
-		}
-
-		VisualElement root = ui_document.rootVisualElement;
-
-		if (root.childCount == 0) {
-			return;
-		}
-
-		if (compass_strip == null) {
-			compass_strip = root.Q<VisualElement>("compass-strip");
-		}
-
-		if (compass_markers == null) {
-			compass_markers = root.Q<VisualElement>("compass-markers");
-		}
-
-		// Initialize compass elements if strip was just found
-		if (compass_strip != null && compass_strip.childCount == 0) {
-			// Get width from wrapper
-			VisualElement compass_wrapper = root.Q<VisualElement>("compass-wrapper");
-
-			if (compass_wrapper != null && compass_wrapper.resolvedStyle.width > 0) {
-				compass_width = compass_wrapper.resolvedStyle.width;
-			}
-
-			initialize_settings();
-			generate_compass_elements();
-
-			// Sync editor markers on initial setup
-			editor_marker_instances.Clear();
-			sync_editor_markers();
-		}
-	}
-
-	#if UNITY_EDITOR
-	private void OnValidate() {
-		if (!Application.isPlaying) {
-			// Try to initialize if UI references were lost (e.g., after recompile)
-			if (compass_strip == null || compass_markers == null) {
-				try_initialize();
-			}
-
-			if (compass_strip != null) {
+		private void OnValidate() {
+			if (!Application.isPlaying && compass_strip != null) {
 				initialize_settings();
 				update_compass_rotation();
 				sync_editor_markers();
 			}
 		}
-	}
-	#endif
+		#endif
 
-	private void sync_editor_markers() {
-		if (compass_markers == null) {
-			return;
-		}
+		private void sync_editor_markers() {
+			if (compass_markers == null) {
+				return;
+			}
 
-		// Remove markers that are no longer in the editor list
-		for (int i = editor_marker_instances.Count - 1; i >= 0; i--) {
-			Compass_Marker instance = editor_marker_instances[i];
-			bool found = false;
+			// Remove markers that are no longer in the editor list
+			for (int i = editor_marker_instances.Count - 1; i >= 0; i--) {
+				Compass_Marker instance = editor_marker_instances[i];
+				bool found = false;
 
+				foreach (Compass_Marker_Data data in editor_markers) {
+					if (data.target == instance.target) {
+						found = true;
+						break;
+					}
+				}
+
+				if (!found) {
+					remove_marker(instance);
+					editor_marker_instances.RemoveAt(i);
+				}
+			}
+
+			// Add or update markers from the editor list
 			foreach (Compass_Marker_Data data in editor_markers) {
-				if (data.target == instance.target) {
-					found = true;
-					break;
+				if (data.target == null) {
+					continue;
 				}
-			}
 
-			if (!found) {
-				remove_marker(instance);
-				editor_marker_instances.RemoveAt(i);
+				// Find existing instance
+				Compass_Marker existing = null;
+
+				foreach (Compass_Marker instance in editor_marker_instances) {
+					if (instance.target == data.target) {
+						existing = instance;
+						break;
+					}
+				}
+
+				if (existing == null) {
+					// Create new marker
+					Compass_Marker new_marker = add_marker(data.target, data.icon, data.color);
+
+					if (new_marker != null) {
+						editor_marker_instances.Add(new_marker);
+					}
+				} else {
+					// Update existing marker if properties changed
+					if (existing.icon != data.icon || existing.color != data.color) {
+						existing.icon = data.icon;
+						existing.color = data.color;
+						apply_marker_visuals(existing);
+					}
+				}
 			}
 		}
 
-		// Add or update markers from the editor list
-		foreach (Compass_Marker_Data data in editor_markers) {
-			if (data.target == null) {
-				continue;
+		private void apply_marker_visuals(Compass_Marker marker) {
+			if (marker.icon_element == null) {
+				return;
 			}
 
-			// Find existing instance
-			Compass_Marker existing = null;
-
-			foreach (Compass_Marker instance in editor_marker_instances) {
-				if (instance.target == data.target) {
-					existing = instance;
-					break;
-				}
-			}
-
-			if (existing == null) {
-				// Create new marker
-				Compass_Marker new_marker = add_marker(data.target, data.icon, data.color);
-
-				if (new_marker != null) {
-					editor_marker_instances.Add(new_marker);
-				}
+			if (marker.icon != null) {
+				marker.icon_element.style.backgroundImage = new StyleBackground(marker.icon);
+				marker.icon_element.style.unityBackgroundImageTintColor = marker.color;
+				marker.icon_element.style.backgroundColor = StyleKeyword.None;
 			} else {
-				// Update existing marker if properties changed
-				if (existing.icon != data.icon || existing.color != data.color) {
-					existing.icon = data.icon;
-					existing.color = data.color;
-					apply_marker_visuals(existing);
-				}
+				marker.icon_element.style.backgroundImage = StyleKeyword.None;
+				marker.icon_element.style.backgroundColor = marker.color;
 			}
 		}
-	}
 
-	private void apply_marker_visuals(Compass_Marker marker) {
-		if (marker.icon_element == null) {
-			return;
-		}
+		#endregion
 
-		if (marker.icon != null) {
-			marker.icon_element.style.backgroundImage = new StyleBackground(marker.icon);
-			marker.icon_element.style.unityBackgroundImageTintColor = marker.color;
-			marker.icon_element.style.backgroundColor = StyleKeyword.None;
-		} else {
-			marker.icon_element.style.backgroundImage = StyleKeyword.None;
-			marker.icon_element.style.backgroundColor = marker.color;
-		}
-	}
+		#region Initialization
 
-	#endregion
+		// Rebuilds the strip when the compass width resolves or changes (e.g. window resize).
+		private void on_geometry_changed(GeometryChangedEvent evt) {
+			if (ui_root == null) {
+				return;
+			}
 
-	#region Initialization
+			VisualElement compass_wrapper = ui_root.Q<VisualElement>("compass-wrapper");
 
-	private void on_geometry_changed(GeometryChangedEvent evt) {
-		// Re-fetch references in case the visual tree was rebuilt (e.g., USS reload)
-		VisualElement root = ui_document.rootVisualElement;
-		VisualElement new_strip = root.Q<VisualElement>("compass-strip");
+			if (compass_wrapper == null || compass_wrapper.resolvedStyle.width <= 0f) {
+				return;
+			}
 
-		// Check if we need to reinitialize (first time or after reload)
-		bool needs_init = compass_strip == null || new_strip != compass_strip || (compass_strip != null && compass_strip.childCount == 0);
+			float resolved_width = compass_wrapper.resolvedStyle.width;
 
-		if (needs_init) {
-			initialize_compass();
-			// Clear cached marker instances so they get recreated
+			if (Mathf.Approximately(resolved_width, applied_width)) {
+				return;
+			}
+
+			compass_width = resolved_width;
+			initialize_settings();
+			generate_compass_elements();
+			applied_width = resolved_width;
+
+			// Marker instances live under the strip, so rebuild them after regeneration.
 			editor_marker_instances.Clear();
 			sync_editor_markers();
 		}
-	}
 
-	private void initialize_compass() {
-		VisualElement root = ui_document.rootVisualElement;
-		VisualElement compass_wrapper = root.Q<VisualElement>("compass-wrapper");
+		private void initialize_compass() {
+			if (ui_root == null) {
+				return;
+			}
 
-		compass_strip = root.Q<VisualElement>("compass-strip");
-		compass_markers = root.Q<VisualElement>("compass-markers");
+			compass_strip = ui_root.Q<VisualElement>("compass-strip");
+			compass_markers = ui_root.Q<VisualElement>("compass-markers");
 
-		if (compass_strip == null) {
-			Debug.LogError("Compass_Controller: Could not find compass-strip element.");
-			return;
+			if (compass_strip == null) {
+				Debug.LogError("Compass_Controller: Could not find compass-strip element.");
+				return;
+			}
+
+			// Get actual compass width from the wrapper
+			VisualElement compass_wrapper = ui_root.Q<VisualElement>("compass-wrapper");
+
+			if (compass_wrapper != null && compass_wrapper.resolvedStyle.width > 0f) {
+				compass_width = compass_wrapper.resolvedStyle.width;
+				applied_width = compass_width;
+			}
+
+			initialize_settings();
+			generate_compass_elements();
 		}
 
-		// Get actual compass width from the wrapper
-		if (compass_wrapper != null && compass_wrapper.resolvedStyle.width > 0) {
-			compass_width = compass_wrapper.resolvedStyle.width;
-			pixels_per_degree = compass_width / compass_fov;
-			strip_offset = 180f * pixels_per_degree;
-		}
+		private void generate_compass_elements() {
+			compass_strip.Clear();
 
-		generate_compass_elements();
-	}
+			// Calculate strip width for -180 to 540 degrees (720 degrees total)
+			float strip_width = 720f * pixels_per_degree;
 
-	private void generate_compass_elements() {
-		compass_strip.Clear();
+			compass_strip.style.width = strip_width;
 
-		// Calculate strip width for -180 to 540 degrees (720 degrees total)
-		float strip_width = 720f * pixels_per_degree;
+			// Generate elements from -180 to 540 degrees
+			for (int degree = -180; degree <= 540; degree += 5) {
+				float x_pos = (degree + 180f) * pixels_per_degree;
 
-		compass_strip.style.width = strip_width;
+				// Create tick mark
+				VisualElement tick = create_tick(degree, x_pos);
 
-		// Generate elements from -180 to 540 degrees
-		for (int degree = -180; degree <= 540; degree += 5) {
-			float x_pos = (degree + 180f) * pixels_per_degree;
+				compass_strip.Add(tick);
 
-			// Create tick mark
-			VisualElement tick = create_tick(degree, x_pos);
+				// Add degree label every 15 degrees (but not at cardinals)
+				if (degree % 15 == 0 && !is_cardinal_direction(normalize_angle(degree))) {
+					Label degree_label = create_degree_label(degree, x_pos);
 
-			compass_strip.Add(tick);
+					compass_strip.Add(degree_label);
+				}
+			}
 
-			// Add degree label every 15 degrees (but not at cardinals)
-			if (degree % 15 == 0 && !is_cardinal_direction(normalize_angle(degree))) {
-				Label degree_label = create_degree_label(degree, x_pos);
-
-				compass_strip.Add(degree_label);
+			// Add cardinal labels (need multiple instances for wrapping)
+			foreach ((string label, float angle) in cardinals) {
+				// Add at the base angle
+				add_cardinal_label(label, angle);
+				// Add wrapped instance at angle - 360 (for negative range)
+				add_cardinal_label(label, angle - 360f);
+				// Add wrapped instance at angle + 360 (for positive overflow)
+				add_cardinal_label(label, angle + 360f);
 			}
 		}
 
-		// Add cardinal labels (need multiple instances for wrapping)
-		foreach ((string label, float angle) in cardinals) {
-			// Add at the base angle
-			add_cardinal_label(label, angle);
-			// Add wrapped instance at angle - 360 (for negative range)
-			add_cardinal_label(label, angle - 360f);
-			// Add wrapped instance at angle + 360 (for positive overflow)
-			add_cardinal_label(label, angle + 360f);
-		}
-	}
+		private VisualElement create_tick(int degree, float x_pos) {
+			VisualElement tick = new VisualElement();
 
-	private VisualElement create_tick(int degree, float x_pos) {
-		VisualElement tick = new VisualElement();
+			tick.AddToClassList("compass-tick");
 
-		tick.AddToClassList("compass-tick");
+			int normalized = normalize_angle(degree);
 
-		int normalized = normalize_angle(degree);
+			if (is_cardinal_direction(normalized)) {
+				tick.AddToClassList("compass-tick-large");
+			} else if (normalized % 15 == 0) {
+				tick.AddToClassList("compass-tick-medium");
+			} else {
+				tick.AddToClassList("compass-tick-small");
+			}
 
-		if (is_cardinal_direction(normalized)) {
-			tick.AddToClassList("compass-tick-large");
-		} else if (normalized % 15 == 0) {
-			tick.AddToClassList("compass-tick-medium");
-		} else {
-			tick.AddToClassList("compass-tick-small");
+			tick.style.left = x_pos;
+			tick.pickingMode = PickingMode.Ignore;
+
+			return tick;
 		}
 
-		tick.style.left = x_pos;
-		tick.pickingMode = PickingMode.Ignore;
+		private Label create_degree_label(int degree, float x_pos) {
+			int display_degree = normalize_angle(degree);
+			Label label = new Label(display_degree.ToString());
 
-		return tick;
-	}
+			label.AddToClassList("compass-degree");
+			label.style.left = x_pos;
+			label.pickingMode = PickingMode.Ignore;
 
-	private Label create_degree_label(int degree, float x_pos) {
-		int display_degree = normalize_angle(degree);
-		Label label = new Label(display_degree.ToString());
-
-		label.AddToClassList("compass-degree");
-		label.style.left = x_pos;
-		label.pickingMode = PickingMode.Ignore;
-
-		return label;
-	}
-
-	private void add_cardinal_label(string text, float angle) {
-		// Only add if within our range (-180 to 540)
-		if (angle < -180f || angle > 540f) {
-			return;
+			return label;
 		}
 
-		float x_pos = (angle + 180f) * pixels_per_degree;
-		Label label = new Label(text);
+		private void add_cardinal_label(string text, float angle) {
+			// Only add if within our range (-180 to 540)
+			if (angle < -180f || angle > 540f) {
+				return;
+			}
 
-		label.AddToClassList("compass-label");
-		label.AddToClassList("compass-label-cardinal");
-		label.style.left = x_pos;
-		label.pickingMode = PickingMode.Ignore;
+			float x_pos = (angle + 180f) * pixels_per_degree;
+			Label label = new Label(text);
 
-		compass_strip.Add(label);
-	}
+			label.AddToClassList("compass-label");
+			label.AddToClassList("compass-label-cardinal");
+			label.style.left = x_pos;
+			label.pickingMode = PickingMode.Ignore;
 
-	private bool is_cardinal_direction(int degree) {
-		return degree == 0 || degree == 45 || degree == 90 || degree == 135 || degree == 180 || degree == 225 || degree == 270 || degree == 315;
-	}
-
-	private int normalize_angle(int degree) {
-		int normalized = degree % 360;
-
-		if (normalized < 0) {
-			normalized += 360;
+			compass_strip.Add(label);
 		}
+
+		private bool is_cardinal_direction(int degree) {
+			return degree == 0 || degree == 45 || degree == 90 || degree == 135 || degree == 180 || degree == 225 || degree == 270 || degree == 315;
+		}
+
+		private int normalize_angle(int degree) {
+			int normalized = degree % 360;
+
+			if (normalized < 0) {
+				normalized += 360;
+			}
 		
-		return normalized;
-	}
-
-	#endregion
-
-	#region Compass Rotation
-
-	private void update_compass_rotation() {
-		if (compass_strip == null) {
-			return;
+			return normalized;
 		}
 
-		float current_yaw;
+		#endregion
 
-		#if UNITY_EDITOR
-		if (!Application.isPlaying) {
-			current_yaw = editor_preview_heading;
-		} else {
-			current_yaw = cam_transform != null ? get_camera_yaw() : editor_preview_heading;
-		}
-		#else
-		if (cam_transform == null) {
-			return;
-		}
+		#region Compass Rotation
 
-		current_yaw = get_camera_yaw();
-		#endif
+		private void update_compass_rotation() {
+			if (compass_strip == null) {
+				return;
+			}
 
-		// Calculate position to center the current heading
-		// The strip is positioned so that 0 degrees is at strip_offset from the left
-		float left_position = -current_yaw * pixels_per_degree - strip_offset + (compass_width / 2f);
+			float current_yaw;
 
-		compass_strip.style.left = left_position;
-	}
+			#if UNITY_EDITOR
+			if (!Application.isPlaying) {
+				current_yaw = editor_preview_heading;
+			} else {
+				current_yaw = cam_transform != null ? get_camera_yaw() : editor_preview_heading;
+			}
+			#else
+			if (cam_transform == null) {
+				return;
+			}
 
-	private float get_camera_yaw() {
-		Vector3 forward = cam_transform.forward;
-		float yaw = Mathf.Atan2(forward.x, forward.z) * Mathf.Rad2Deg;
+			current_yaw = get_camera_yaw();
+			#endif
 
-		// Normalize to 0-360
-		if (yaw < 0f) {
-			yaw += 360f;
-		}
+			// Calculate position to center the current heading
+			// The strip is positioned so that 0 degrees is at strip_offset from the left
+			float left_position = -current_yaw * pixels_per_degree - strip_offset + (compass_width / 2f);
 
-		return yaw;
-	}
-
-	#endregion
-
-	#region Marker Management
-
-	/// <summary>
-	/// Add a waypoint marker to the compass.
-	/// </summary>
-	/// <param name="target">The transform to track.</param>
-	/// <param name="icon">Optional icon texture.</param>
-	/// <param name="color">Optional color tint. Defaults to white.</param>
-	/// <returns>The created marker for later reference.</returns>
-	public Compass_Marker add_marker(Transform target, Texture2D icon = null, Color? color = null) {
-		if (compass_markers == null) {
-			return null;
+			compass_strip.style.left = left_position;
 		}
 
-		Color marker_color = color ?? Color.white;
-		Compass_Marker marker = new Compass_Marker(target, icon, marker_color);
+		private float get_camera_yaw() {
+			Vector3 forward = cam_transform.forward;
+			float yaw = Mathf.Atan2(forward.x, forward.z) * Mathf.Rad2Deg;
 
-		// Create UI elements
-		marker.element = new VisualElement();
-		marker.element.AddToClassList("compass-marker");
+			// Normalize to 0-360
+			if (yaw < 0f) {
+				yaw += 360f;
+			}
 
-		marker.icon_element = new VisualElement();
-		marker.icon_element.AddToClassList("compass-marker-icon");
-
-		// Apply icon and color
-		if (icon != null) {
-			marker.icon_element.style.backgroundImage = new StyleBackground(icon);
-			marker.icon_element.style.unityBackgroundImageTintColor = marker_color;
-			marker.icon_element.style.backgroundColor = StyleKeyword.None;
-		} else {
-			marker.icon_element.style.backgroundColor = marker_color;
+			return yaw;
 		}
 
-		marker.distance_label = new Label();
-		marker.distance_label.AddToClassList("compass-marker-distance");
+		#endregion
 
-		marker.element.Add(marker.icon_element);
-		marker.element.Add(marker.distance_label);
+		#region Marker Management
 
-		compass_markers.Add(marker.element);
-		markers.Add(marker);
+		/// <summary>
+		/// Add a waypoint marker to the compass.
+		/// </summary>
+		/// <param name="target">The transform to track.</param>
+		/// <param name="icon">Optional icon texture.</param>
+		/// <param name="color">Optional color tint. Defaults to white.</param>
+		/// <returns>The created marker for later reference.</returns>
+		public Compass_Marker add_marker(Transform target, Texture2D icon = null, Color? color = null) {
+			if (compass_markers == null) {
+				return null;
+			}
 
-		return marker;
-	}
+			Color marker_color = color ?? Color.white;
+			Compass_Marker marker = new Compass_Marker(target, icon, marker_color);
 
-	/// <summary>
-	/// Remove a waypoint marker from the compass.
-	/// </summary>
-	/// <param name="marker">The marker to remove.</param>
-	public void remove_marker(Compass_Marker marker) {
-		if (marker == null) {
-			return;
+			// Create UI elements
+			marker.element = new VisualElement();
+			marker.element.AddToClassList("compass-marker");
+
+			marker.icon_element = new VisualElement();
+			marker.icon_element.AddToClassList("compass-marker-icon");
+
+			// Apply icon and color
+			if (icon != null) {
+				marker.icon_element.style.backgroundImage = new StyleBackground(icon);
+				marker.icon_element.style.unityBackgroundImageTintColor = marker_color;
+				marker.icon_element.style.backgroundColor = StyleKeyword.None;
+			} else {
+				marker.icon_element.style.backgroundColor = marker_color;
+			}
+
+			marker.distance_label = new Label();
+			marker.distance_label.AddToClassList("compass-marker-distance");
+
+			marker.element.Add(marker.icon_element);
+			marker.element.Add(marker.distance_label);
+
+			compass_markers.Add(marker.element);
+			markers.Add(marker);
+
+			return marker;
 		}
 
-		if (marker.element != null && compass_markers != null) {
-			compass_markers.Remove(marker.element);
-		}
+		/// <summary>
+		/// Remove a waypoint marker from the compass.
+		/// </summary>
+		/// <param name="marker">The marker to remove.</param>
+		public void remove_marker(Compass_Marker marker) {
+			if (marker == null) {
+				return;
+			}
 
-		markers.Remove(marker);
-	}
-
-	/// <summary>
-	/// Remove all waypoint markers from the compass.
-	/// </summary>
-	public void clear_markers() {
-		foreach (Compass_Marker marker in markers) {
 			if (marker.element != null && compass_markers != null) {
 				compass_markers.Remove(marker.element);
 			}
+
+			markers.Remove(marker);
 		}
 
-		markers.Clear();
-	}
+		/// <summary>
+		/// Remove all waypoint markers from the compass.
+		/// </summary>
+		public void clear_markers() {
+			foreach (Compass_Marker marker in markers) {
+				if (marker.element != null && compass_markers != null) {
+					compass_markers.Remove(marker.element);
+				}
+			}
 
-	private void update_markers() {
-		if (compass_markers == null) {
-			return;
+			markers.Clear();
 		}
 
-		// Get current yaw - use editor preview in edit mode
-		float current_yaw;
-		Transform player;
+		private void update_markers() {
+			if (compass_markers == null) {
+				return;
+			}
 
-		#if UNITY_EDITOR
-		if (!Application.isPlaying) {
-			current_yaw = editor_preview_heading;
-			player = player_transform != null ? player_transform : transform;
-		} else {
+			// Get current yaw - use editor preview in edit mode
+			float current_yaw;
+			Transform player;
+
+			#if UNITY_EDITOR
+			if (!Application.isPlaying) {
+				current_yaw = editor_preview_heading;
+				player = player_transform != null ? player_transform : transform;
+			} else {
+				if (cam_transform == null) {
+					return;
+				}
+
+				current_yaw = get_camera_yaw();
+				player = player_transform != null ? player_transform : cam_transform;
+			}
+			#else
 			if (cam_transform == null) {
 				return;
 			}
 
 			current_yaw = get_camera_yaw();
 			player = player_transform != null ? player_transform : cam_transform;
-		}
-		#else
-		if (cam_transform == null) {
-			return;
-		}
-
-		current_yaw = get_camera_yaw();
-		player = player_transform != null ? player_transform : cam_transform;
-		#endif
-
-		float half_width = compass_width * 0.5f;
-		Vector3 player_pos = player.position;
-
-		foreach (Compass_Marker marker in markers) {
-			if (marker.target == null) {
-				set_marker_visible(marker, false);
-				continue;
-			}
-
-			// Calculate angle from player to target
-			Vector3 dir_to_target = marker.target.position - player_pos;
-			dir_to_target.y = 0f; // Ignore vertical difference
-
-			float target_angle = Mathf.Atan2(dir_to_target.x, dir_to_target.z) * Mathf.Rad2Deg;
-
-			if (target_angle < 0f) {
-				target_angle += 360f;
-			}
-
-			// Calculate relative angle from current heading
-			float relative_angle = Mathf.DeltaAngle(current_yaw, target_angle);
-
-			// Check if marker is within visible range
-			bool in_view = Mathf.Abs(relative_angle) <= half_fov;
-
-			#if UNITY_EDITOR
-			// In editor, clamp marker to edges instead of hiding
-			if (!Application.isPlaying && !in_view) {
-				relative_angle = Mathf.Clamp(relative_angle, -half_fov, half_fov);
-				in_view = true;
-			}
 			#endif
 
-			if (!in_view) {
-				set_marker_visible(marker, false);
-				continue;
+			float half_width = compass_width * 0.5f;
+			Vector3 player_pos = player.position;
+
+			foreach (Compass_Marker marker in markers) {
+				if (marker.target == null) {
+					set_marker_visible(marker, false);
+					continue;
+				}
+
+				// Calculate angle from player to target
+				Vector3 dir_to_target = marker.target.position - player_pos;
+				dir_to_target.y = 0f; // Ignore vertical difference
+
+				float target_angle = Mathf.Atan2(dir_to_target.x, dir_to_target.z) * Mathf.Rad2Deg;
+
+				if (target_angle < 0f) {
+					target_angle += 360f;
+				}
+
+				// Calculate relative angle from current heading
+				float relative_angle = Mathf.DeltaAngle(current_yaw, target_angle);
+
+				// Check if marker is within visible range
+				bool in_view = Mathf.Abs(relative_angle) <= half_fov;
+
+				#if UNITY_EDITOR
+				// In editor, clamp marker to edges instead of hiding
+				if (!Application.isPlaying && !in_view) {
+					relative_angle = Mathf.Clamp(relative_angle, -half_fov, half_fov);
+					in_view = true;
+				}
+				#endif
+
+				if (!in_view) {
+					set_marker_visible(marker, false);
+					continue;
+				}
+
+				set_marker_visible(marker, true);
+
+				// Position marker on compass
+				marker.element.style.left = (relative_angle * pixels_per_degree) + half_width;
+
+				// Update distance only when it changes (rounded to nearest meter)
+				int distance = Mathf.RoundToInt(dir_to_target.magnitude);
+
+				if (distance != marker.cached_distance) {
+					marker.cached_distance = distance;
+					marker.distance_label.text = format_distance(distance);
+				}
+			}
+		}
+
+		private void set_marker_visible(Compass_Marker marker, bool visible) {
+			if (marker.is_visible == visible) {
+				return;
 			}
 
-			set_marker_visible(marker, true);
+			marker.is_visible = visible;
 
-			// Position marker on compass
-			marker.element.style.left = (relative_angle * pixels_per_degree) + half_width;
-
-			// Update distance only when it changes (rounded to nearest meter)
-			int distance = Mathf.RoundToInt(dir_to_target.magnitude);
-
-			if (distance != marker.cached_distance) {
-				marker.cached_distance = distance;
-				marker.distance_label.text = format_distance(distance);
+			if (visible) {
+				marker.element.RemoveFromClassList("compass-marker-hidden");
+			} else {
+				marker.element.AddToClassList("compass-marker-hidden");
 			}
 		}
-	}
 
-	private void set_marker_visible(Compass_Marker marker, bool visible) {
-		if (marker.is_visible == visible) {
-			return;
+		private string format_distance(int distance) {
+			return string.Format("{0:N0}m", distance);
 		}
 
-		marker.is_visible = visible;
+		#endregion
 
-		if (visible) {
-			marker.element.RemoveFromClassList("compass-marker-hidden");
-		} else {
-			marker.element.AddToClassList("compass-marker-hidden");
-		}
 	}
-
-	private string format_distance(int distance) {
-		return $"{distance:N0}m";
-	}
-
-	#endregion
 
 }

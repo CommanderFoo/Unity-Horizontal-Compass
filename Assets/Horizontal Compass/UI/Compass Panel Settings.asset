@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 19101, guid: 0000000000000000e000000000000000, type: 0}
   m_Name: Compass Panel Settings
   m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.PanelSettings
-  themeUss: {fileID: 0}
+  themeUss: {fileID: -4733365628477956816, guid: 4105da9da9c5f5241b18989bc4eeeaa0, type: 3}
   m_DisableNoThemeWarning: 0
   m_TargetTexture: {fileID: 0}
   m_RenderMode: 0
@@ -47,6 +47,6 @@ MonoBehaviour:
   m_SDFShader: {fileID: 19011, guid: 0000000000000000f000000000000000, type: 0}
   m_BitmapShader: {fileID: 9001, guid: 0000000000000000f000000000000000, type: 0}
   m_SpriteShader: {fileID: 19012, guid: 0000000000000000f000000000000000, type: 0}
-  m_ICUDataAsset: {fileID: 0}
+  m_ICUDataAsset: {fileID: 20204, guid: 0000000000000000f000000000000000, type: 0}
   forceGammaRendering: 0
   textSettings: {fileID: 0}

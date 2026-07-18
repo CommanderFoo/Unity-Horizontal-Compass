@@ -1,19 +1,23 @@
 using System;
 using UnityEngine;
 
-/// <summary>
-/// Serializable data for configuring compass markers in the editor.
-/// </summary>
-[Serializable]
-public class Compass_Marker_Data {
+namespace net.pixeldepth.horizontal_compass {
 
-	[Tooltip("The world-space transform this marker tracks.")]
-	public Transform target;
+	/// <summary>
+	/// Serializable data for configuring compass markers in the editor.
+	/// </summary>
+	[Serializable]
+	public class Compass_Marker_Data {
 
-	[Tooltip("Optional icon to display. Leave empty for default circle.")]
-	public Texture2D icon;
+		[Tooltip("The world-space transform this marker tracks.")]
+		public Transform target;
 
-	[Tooltip("Color tint for the marker icon.")]
-	public Color color = Color.white;
+		[Tooltip("Optional icon to display. Leave empty for default circle.")]
+		public Texture2D icon;
+
+		[Tooltip("Color tint for the marker icon.")]
+		public Color color = Color.white;
+
+	}
 
 }

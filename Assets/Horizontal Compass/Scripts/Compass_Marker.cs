@@ -1,63 +1,67 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-/// <summary>
-/// Data class representing a waypoint marker on the compass.
-/// </summary>
-public class Compass_Marker {
-
-	#region Public Fields
+namespace net.pixeldepth.horizontal_compass {
 
 	/// <summary>
-	/// The world-space transform this marker tracks.
+	/// Data class representing a waypoint marker on the compass.
 	/// </summary>
-	public Transform target;
+	public class Compass_Marker {
 
-	/// <summary>
-	/// Optional icon to display for this marker.
-	/// </summary>
-	public Texture2D icon;
+		#region Public Fields
 
-	/// <summary>
-	/// Color tint for the marker.
-	/// </summary>
-	public Color color;
+		/// <summary>
+		/// The world-space transform this marker tracks.
+		/// </summary>
+		public Transform target;
 
-	/// <summary>
-	/// The UI element representing this marker on the compass.
-	/// </summary>
-	public VisualElement element;
+		/// <summary>
+		/// Optional icon to display for this marker.
+		/// </summary>
+		public Texture2D icon;
 
-	/// <summary>
-	/// The icon element within the marker.
-	/// </summary>
-	public VisualElement icon_element;
+		/// <summary>
+		/// Color tint for the marker.
+		/// </summary>
+		public Color color;
 
-	/// <summary>
-	/// The label showing distance to target.
-	/// </summary>
-	public Label distance_label;
+		/// <summary>
+		/// The UI element representing this marker on the compass.
+		/// </summary>
+		public VisualElement element;
 
-	/// <summary>
-	/// Cached visibility state to avoid repeated class changes.
-	/// </summary>
-	public bool is_visible = true;
+		/// <summary>
+		/// The icon element within the marker.
+		/// </summary>
+		public VisualElement icon_element;
 
-	/// <summary>
-	/// Cached distance for change detection.
-	/// </summary>
-	public int cached_distance = -1;
+		/// <summary>
+		/// The label showing distance to target.
+		/// </summary>
+		public Label distance_label;
 
-	#endregion
+		/// <summary>
+		/// Cached visibility state to avoid repeated class changes.
+		/// </summary>
+		public bool is_visible = true;
 
-	#region Constructor
+		/// <summary>
+		/// Cached distance for change detection.
+		/// </summary>
+		public int cached_distance = -1;
 
-	public Compass_Marker(Transform target, Texture2D icon = null, Color? color = null) {
-		this.target = target;
-		this.icon = icon;
-		this.color = color ?? Color.white;
+		#endregion
+
+		#region Constructor
+
+		public Compass_Marker(Transform target, Texture2D icon = null, Color? color = null) {
+			this.target = target;
+			this.icon = icon;
+			this.color = color ?? Color.white;
+		}
+
+		#endregion
+
 	}
-
-	#endregion
 
 }
