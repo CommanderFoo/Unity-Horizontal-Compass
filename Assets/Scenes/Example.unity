@@ -183,7 +183,7 @@ Transform:
   m_GameObject: {fileID: 164976480}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -75.1, y: 0.862, z: -56.4}
+  m_LocalPosition: {x: -75.1, y: 0.862, z: -16462}
   m_LocalScale: {x: 0.49795, y: 0.49795, z: 0.49795}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -786,6 +786,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1435450074}
   - component: {fileID: 1435450075}
+  - component: {fileID: 1435450076}
   m_Layer: 0
   m_Name: Compass
   m_TagString: Untagged
@@ -823,12 +824,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dcbc77ac9b6b3d148aa9fdf6db5967f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Compass_Controller
-  panel_renderer: {fileID: 1920559372}
-  compass_width: 800
-  compass_fov: 150
-  editor_preview_heading: 0
-  player_transform: {fileID: 5393215579111688474}
-  editor_markers:
+  panelRenderer: {fileID: 1920559372}
+  compassWidth: 800
+  compassFOV: 150
+  distanceUnit: 0
+  editorPreviewHeading: 0
+  playerTransform: {fileID: 5393215579111688474}
+  editorMarkers:
   - target: {fileID: 1529139156}
     icon: {fileID: 0}
     color: {r: 0.6219302, g: 0.645283, b: 0.15462439, a: 1}
@@ -838,6 +840,20 @@ MonoBehaviour:
   - target: {fileID: 164976481}
     icon: {fileID: 0}
     color: {r: 0.2603773, g: 0.2603773, b: 0.2603773, a: 1}
+  markerRangeThreshold: 0
+--- !u!114 &1435450076
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1435450073}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e78521a3b533ab4d899cc10a1f2c5ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::net.pixeldepth.horizontal_compass.examples.Compass_Event_Demo
+  compass: {fileID: 1435450075}
 --- !u!1 &1529139155
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UIElements;
 
 #if UNITY_EDITOR
@@ -7,6 +8,20 @@ using UnityEditor;
 #endif
 
 namespace net.pixeldepth.horizontal_compass {
+
+	/// <summary>
+	/// Units used to display marker distances.
+	/// </summary>
+	public enum Distance_Unit {
+
+		[InspectorName("Meters")]
+		METERS,
+		[InspectorName("Meters + Kilometers")]
+		KILOMETERS,
+		[InspectorName("Imperial (feet, miles)")]
+		IMPERIAL
+
+	}
 
 	/// <summary>
 	/// Controls the horizontal compass UI, updating it based on camera rotation
@@ -18,27 +33,52 @@ namespace net.pixeldepth.horizontal_compass {
 		#region Serialized Fields
 
 		[Header("UI Reference")]
-		[SerializeField, Tooltip("Drag the PanelRenderer component that displays the compass.")]
-		private PanelRenderer panel_renderer;
+		[SerializeField, FormerlySerializedAs("panel_renderer"), Tooltip("Drag the PanelRenderer component that displays the compass.")]
+		private PanelRenderer panelRenderer;
 
 		[Header("Compass Settings")]
-		[SerializeField, Tooltip("How wide the compass bar is in pixels. Should match the width set in USS (--compass-width).")]
-		private float compass_width = 800f;
+		[SerializeField, FormerlySerializedAs("compass_width"), Tooltip("How wide the compass bar is in pixels. Should match the width set in USS (--compass-width).")]
+		private float compassWidth = 800f;
 
-		[SerializeField, Tooltip("How much of the world the compass shows at once. Lower = zoomed in (ticks spread apart), Higher = zoomed out (ticks closer together). 150 means you see 150 degrees of the world.")]
-		private float compass_fov = 150f;
+		[SerializeField, FormerlySerializedAs("compass_fov"), Tooltip("How much of the world the compass shows at once. Lower = zoomed in (ticks spread apart), Higher = zoomed out (ticks closer together). 150 means you see 150 degrees of the world.")]
+		private float compassFOV = 150f;
+
+		[SerializeField, FormerlySerializedAs("distance_unit"), Tooltip("Units used for marker distance labels. Meters keeps the classic behaviour; the other options roll over to km or miles.")]
+		private Distance_Unit distanceUnit = Distance_Unit.METERS;
 
 		[Header("Editor Preview")]
-		[SerializeField, Tooltip("Simulates where the player is looking in edit mode. 0 = North, 90 = East, 180 = South, 270 = West."), Range(0f, 360f)]
-		private float editor_preview_heading = 0f;
+		[SerializeField, FormerlySerializedAs("editor_preview_heading"), Tooltip("Simulates where the player is looking in edit mode. 0 = North, 90 = East, 180 = South, 270 = West."), Range(0f, 360f)]
+		private float editorPreviewHeading = 0f;
 
 		[Header("Player Reference")]
-		[SerializeField, Tooltip("The player's position. Used to calculate distance to markers. If empty, uses the camera position.")]
-		private Transform player_transform;
+		[SerializeField, FormerlySerializedAs("player_transform"), Tooltip("The player's position. Used to calculate distance to markers. If empty, uses the camera position.")]
+		private Transform playerTransform;
 
 		[Header("Markers")]
-		[SerializeField, Tooltip("Markers to display on the compass. Configure targets, icons, and colors.")]
-		private List<Compass_Marker_Data> editor_markers = new List<Compass_Marker_Data>();
+		[SerializeField, FormerlySerializedAs("editor_markers"), Tooltip("Markers to display on the compass. Configure targets, icons, and colors.")]
+		private List<Compass_Marker_Data> editorMarkers = new List<Compass_Marker_Data>();
+
+		[SerializeField, FormerlySerializedAs("marker_range_threshold"), Tooltip("Distance (in meters) at which a marker counts as 'within range' and raises On_Marker_Within_Range. 0 disables the event.")]
+		private float markerRangeThreshold = 0f;
+
+		#endregion
+
+		#region Events
+
+		/// <summary>
+		/// Raised in play mode when a marker enters the compass field of view.
+		/// </summary>
+		public event System.Action<Compass_Marker> On_Marker_Entered_View;
+
+		/// <summary>
+		/// Raised in play mode when a marker leaves the compass field of view.
+		/// </summary>
+		public event System.Action<Compass_Marker> On_Marker_Exited_View;
+
+		/// <summary>
+		/// Raised in play mode when a marker first comes within markerRangeThreshold of the player.
+		/// </summary>
+		public event System.Action<Compass_Marker> On_Marker_Within_Range;
 
 		#endregion
 
@@ -51,6 +91,9 @@ namespace net.pixeldepth.horizontal_compass {
 
 		// Width last used to build the strip, so we only rebuild when it changes
 		private float applied_width = -1f;
+
+		// Distance unit last applied, so labels refresh when the unit changes
+		private Distance_Unit applied_distance_unit = Distance_Unit.METERS;
 
 		// Last UI version handled, so redundant Panel Renderer reloads can be skipped
 		private int last_ui_version = -1;
@@ -92,12 +135,12 @@ namespace net.pixeldepth.horizontal_compass {
 		private void OnEnable() {
 			initialize_settings();
 
-			if (panel_renderer == null) {
-				panel_renderer = GetComponent<PanelRenderer>();
+			if (panelRenderer == null) {
+				panelRenderer = GetComponent<PanelRenderer>();
 			}
 
-			if (panel_renderer != null) {
-				panel_renderer.RegisterUIReloadCallback(on_ui_reload);
+			if (panelRenderer != null) {
+				panelRenderer.RegisterUIReloadCallback(on_ui_reload);
 			}
 
 			#if UNITY_EDITOR
@@ -106,8 +149,8 @@ namespace net.pixeldepth.horizontal_compass {
 		}
 
 		private void OnDisable() {
-			if (panel_renderer != null) {
-				panel_renderer.UnregisterUIReloadCallback(on_ui_reload);
+			if (panelRenderer != null) {
+				panelRenderer.UnregisterUIReloadCallback(on_ui_reload);
 			}
 
 			#if UNITY_EDITOR
@@ -159,8 +202,8 @@ namespace net.pixeldepth.horizontal_compass {
 				cam_transform = Camera.main.transform;
 			}
 
-			pixels_per_degree = compass_width / compass_fov;
-			half_fov = compass_fov * 0.5f;
+			pixels_per_degree = compassWidth / compassFOV;
+			half_fov = compassFOV * 0.5f;
 
 			// Strip needs to cover -180 to 540 degrees for seamless wrapping
 			// That's 720 degrees total
@@ -204,7 +247,7 @@ namespace net.pixeldepth.horizontal_compass {
 				Compass_Marker instance = editor_marker_instances[i];
 				bool found = false;
 
-				foreach (Compass_Marker_Data data in editor_markers) {
+				foreach (Compass_Marker_Data data in editorMarkers) {
 					if (data.target == instance.target) {
 						found = true;
 						break;
@@ -218,7 +261,7 @@ namespace net.pixeldepth.horizontal_compass {
 			}
 
 			// Add or update markers from the editor list
-			foreach (Compass_Marker_Data data in editor_markers) {
+			foreach (Compass_Marker_Data data in editorMarkers) {
 				if (data.target == null) {
 					continue;
 				}
@@ -288,7 +331,7 @@ namespace net.pixeldepth.horizontal_compass {
 				return;
 			}
 
-			compass_width = resolved_width;
+			compassWidth = resolved_width;
 			initialize_settings();
 			generate_compass_elements();
 			applied_width = resolved_width;
@@ -315,8 +358,8 @@ namespace net.pixeldepth.horizontal_compass {
 			VisualElement compass_wrapper = ui_root.Q<VisualElement>("compass-wrapper");
 
 			if (compass_wrapper != null && compass_wrapper.resolvedStyle.width > 0f) {
-				compass_width = compass_wrapper.resolvedStyle.width;
-				applied_width = compass_width;
+				compassWidth = compass_wrapper.resolvedStyle.width;
+				applied_width = compassWidth;
 			}
 
 			initialize_settings();
@@ -435,9 +478,9 @@ namespace net.pixeldepth.horizontal_compass {
 
 			#if UNITY_EDITOR
 			if (!Application.isPlaying) {
-				current_yaw = editor_preview_heading;
+				current_yaw = editorPreviewHeading;
 			} else {
-				current_yaw = cam_transform != null ? get_camera_yaw() : editor_preview_heading;
+				current_yaw = cam_transform != null ? get_camera_yaw() : editorPreviewHeading;
 			}
 			#else
 			if (cam_transform == null) {
@@ -449,7 +492,7 @@ namespace net.pixeldepth.horizontal_compass {
 
 			// Calculate position to center the current heading
 			// The strip is positioned so that 0 degrees is at strip_offset from the left
-			float left_position = -current_yaw * pixels_per_degree - strip_offset + (compass_width / 2f);
+			float left_position = -current_yaw * pixels_per_degree - strip_offset + (compassWidth / 2f);
 
 			compass_strip.style.left = left_position;
 		}
@@ -471,7 +514,7 @@ namespace net.pixeldepth.horizontal_compass {
 		#region Marker Management
 
 		/// <summary>
-		/// Add a waypoint marker to the compass.
+		/// Add a waypoint marker to the compass that tracks a transform.
 		/// </summary>
 		/// <param name="target">The transform to track.</param>
 		/// <param name="icon">Optional icon texture.</param>
@@ -482,9 +525,30 @@ namespace net.pixeldepth.horizontal_compass {
 				return null;
 			}
 
-			Color marker_color = color ?? Color.white;
-			Compass_Marker marker = new Compass_Marker(target, icon, marker_color);
+			Compass_Marker marker = new Compass_Marker(target, icon, color ?? Color.white);
 
+			return register_marker(marker);
+		}
+
+		/// <summary>
+		/// Add a waypoint marker to the compass that tracks a fixed world-space position.
+		/// </summary>
+		/// <param name="world_position">The world-space position to track.</param>
+		/// <param name="icon">Optional icon texture.</param>
+		/// <param name="color">Optional color tint. Defaults to white.</param>
+		/// <returns>The created marker for later reference.</returns>
+		public Compass_Marker add_marker(Vector3 world_position, Texture2D icon = null, Color? color = null) {
+			if (compass_markers == null) {
+				return null;
+			}
+
+			Compass_Marker marker = new Compass_Marker(world_position, icon, color ?? Color.white);
+
+			return register_marker(marker);
+		}
+
+		// Builds the UI elements for a marker and registers it with the compass.
+		private Compass_Marker register_marker(Compass_Marker marker) {
 			// Create UI elements
 			marker.element = new VisualElement();
 			marker.element.AddToClassList("compass-marker");
@@ -493,12 +557,12 @@ namespace net.pixeldepth.horizontal_compass {
 			marker.icon_element.AddToClassList("compass-marker-icon");
 
 			// Apply icon and color
-			if (icon != null) {
-				marker.icon_element.style.backgroundImage = new StyleBackground(icon);
-				marker.icon_element.style.unityBackgroundImageTintColor = marker_color;
+			if (marker.icon != null) {
+				marker.icon_element.style.backgroundImage = new StyleBackground(marker.icon);
+				marker.icon_element.style.unityBackgroundImageTintColor = marker.color;
 				marker.icon_element.style.backgroundColor = StyleKeyword.None;
 			} else {
-				marker.icon_element.style.backgroundColor = marker_color;
+				marker.icon_element.style.backgroundColor = marker.color;
 			}
 
 			marker.distance_label = new Label();
@@ -547,21 +611,30 @@ namespace net.pixeldepth.horizontal_compass {
 				return;
 			}
 
+			// If the distance unit changed, invalidate cached labels so they reformat
+			if (distanceUnit != applied_distance_unit) {
+				applied_distance_unit = distanceUnit;
+
+				foreach (Compass_Marker cached_marker in markers) {
+					cached_marker.cached_distance = -1;
+				}
+			}
+
 			// Get current yaw - use editor preview in edit mode
 			float current_yaw;
 			Transform player;
 
 			#if UNITY_EDITOR
 			if (!Application.isPlaying) {
-				current_yaw = editor_preview_heading;
-				player = player_transform != null ? player_transform : transform;
+				current_yaw = editorPreviewHeading;
+				player = playerTransform != null ? playerTransform : transform;
 			} else {
 				if (cam_transform == null) {
 					return;
 				}
 
 				current_yaw = get_camera_yaw();
-				player = player_transform != null ? player_transform : cam_transform;
+				player = playerTransform != null ? playerTransform : cam_transform;
 			}
 			#else
 			if (cam_transform == null) {
@@ -569,21 +642,28 @@ namespace net.pixeldepth.horizontal_compass {
 			}
 
 			current_yaw = get_camera_yaw();
-			player = player_transform != null ? player_transform : cam_transform;
+			player = playerTransform != null ? playerTransform : cam_transform;
 			#endif
 
-			float half_width = compass_width * 0.5f;
+			float half_width = compassWidth * 0.5f;
 			Vector3 player_pos = player.position;
 
 			foreach (Compass_Marker marker in markers) {
-				if (marker.target == null) {
+				if (!marker.use_world_position && marker.target == null) {
 					set_marker_visible(marker, false);
 					continue;
 				}
 
+				Vector3 marker_pos = marker.use_world_position ? marker.world_position : marker.target.position;
+
 				// Calculate angle from player to target
-				Vector3 dir_to_target = marker.target.position - player_pos;
+				Vector3 dir_to_target = marker_pos - player_pos;
 				dir_to_target.y = 0f; // Ignore vertical difference
+
+				float world_distance = dir_to_target.magnitude;
+
+				// Raise the within-range event on the transition into range (play mode only)
+				update_marker_range(marker, world_distance);
 
 				float target_angle = Mathf.Atan2(dir_to_target.x, dir_to_target.z) * Mathf.Rad2Deg;
 
@@ -616,7 +696,7 @@ namespace net.pixeldepth.horizontal_compass {
 				marker.element.style.left = (relative_angle * pixels_per_degree) + half_width;
 
 				// Update distance only when it changes (rounded to nearest meter)
-				int distance = Mathf.RoundToInt(dir_to_target.magnitude);
+				int distance = Mathf.RoundToInt(world_distance);
 
 				if (distance != marker.cached_distance) {
 					marker.cached_distance = distance;
@@ -634,13 +714,57 @@ namespace net.pixeldepth.horizontal_compass {
 
 			if (visible) {
 				marker.element.RemoveFromClassList("compass-marker-hidden");
+
+				if (Application.isPlaying) {
+					On_Marker_Entered_View?.Invoke(marker);
+				}
 			} else {
 				marker.element.AddToClassList("compass-marker-hidden");
+
+				if (Application.isPlaying) {
+					On_Marker_Exited_View?.Invoke(marker);
+				}
+			}
+		}
+
+		// Tracks whether a marker is within markerRangeThreshold and fires the event on entry.
+		private void update_marker_range(Compass_Marker marker, float world_distance) {
+			if (markerRangeThreshold <= 0f) {
+				return;
+			}
+
+			bool now_in_range = world_distance <= markerRangeThreshold;
+
+			if (now_in_range && !marker.in_range) {
+				marker.in_range = true;
+
+				if (Application.isPlaying) {
+					On_Marker_Within_Range?.Invoke(marker);
+				}
+			} else if (!now_in_range && marker.in_range) {
+				marker.in_range = false;
 			}
 		}
 
 		private string format_distance(int distance) {
-			return string.Format("{0:N0}m", distance);
+			switch (distanceUnit) {
+				case Distance_Unit.KILOMETERS:
+					if (distance >= 1000) {
+						return string.Format("{0:0.0}km", distance / 1000f);
+					}
+
+					return string.Format("{0:N0}m", distance);
+				case Distance_Unit.IMPERIAL:
+					float feet = distance * 3.28084f;
+
+					if (feet >= 5280f) {
+						return string.Format("{0:0.0}mi", feet / 5280f);
+					}
+
+					return string.Format("{0:N0}ft", feet);
+				default:
+					return string.Format("{0:N0}m", distance);
+			}
 		}
 
 		#endregion
