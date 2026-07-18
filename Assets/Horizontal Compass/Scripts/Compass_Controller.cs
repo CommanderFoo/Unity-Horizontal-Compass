@@ -52,6 +52,9 @@ namespace net.pixeldepth.horizontal_compass {
 		// Width last used to build the strip, so we only rebuild when it changes
 		private float applied_width = -1f;
 
+		// Last UI version handled, so redundant Panel Renderer reloads can be skipped
+		private int last_ui_version = -1;
+
 		// Editor marker runtime references
 		private List<Compass_Marker> editor_marker_instances = new List<Compass_Marker>();
 
@@ -114,7 +117,13 @@ namespace net.pixeldepth.horizontal_compass {
 
 		// Fired by PanelRenderer whenever the UI is built or reloaded (including LiveReload).
 		// This is the single entry point for (re)initializing the compass from the UI tree.
-		private void on_ui_reload(PanelRenderer renderer, VisualElement root) {
+		// The version number lets us skip redundant reloads when the UI has not changed.
+		private void on_ui_reload(PanelRenderer renderer, VisualElement root, int version) {
+			if (version == last_ui_version && ui_root == root) {
+				return;
+			}
+
+			last_ui_version = version;
 			ui_root = root;
 
 			if (ui_root == null) {
