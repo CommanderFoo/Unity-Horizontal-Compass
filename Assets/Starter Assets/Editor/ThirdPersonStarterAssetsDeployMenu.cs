@@ -17,7 +17,7 @@ namespace StarterAssets
         [MenuItem(MenuRoot + "/Reset Third Person Controller Armature", false)]
         static void ResetThirdPersonControllerArmature()
         {
-            var thirdPersonControllers = FindObjectsByType<ThirdPersonController>(FindObjectsSortMode.None);
+            var thirdPersonControllers = FindObjectsByType<ThirdPersonController>();
             var player = thirdPersonControllers.FirstOrDefault(controller =>
                 controller.GetComponent<Animator>() && controller.CompareTag(PlayerTag));
 
@@ -50,7 +50,7 @@ namespace StarterAssets
         [MenuItem(MenuRoot + "/Reset Third Person Controller Capsule", false)]
         static void ResetThirdPersonControllerCapsule()
         {
-            var thirdPersonControllers = FindObjectsByType<ThirdPersonController>(FindObjectsSortMode.None);
+            var thirdPersonControllers = FindObjectsByType<ThirdPersonController>();
             var player = thirdPersonControllers.FirstOrDefault(controller =>
                 !controller.GetComponent<Animator>() && controller.CompareTag(PlayerTag));
 
