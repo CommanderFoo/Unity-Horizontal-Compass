@@ -1,15 +1,15 @@
 {
   "dependencies": {
     "com.unity.cinemachine": "3.1.7",
-    "com.unity.collections": "6.4.0",
+    "com.unity.collections": "6.5.0",
     "com.unity.ide.rider": "3.0.40",
     "com.unity.ide.visualstudio": "2.0.27",
     "com.unity.inputsystem": "1.19.0",
     "com.unity.recorder": "5.1.6",
-    "com.unity.render-pipelines.core": "17.4.0",
-    "com.unity.render-pipelines.universal": "17.4.0",
-    "com.unity.render-pipelines.universal-config": "17.4.0",
-    "com.unity.test-framework": "1.6.0",
+    "com.unity.render-pipelines.core": "17.5.0",
+    "com.unity.render-pipelines.universal": "17.5.0",
+    "com.unity.render-pipelines.universal-config": "17.5.0",
+    "com.unity.test-framework": "1.7.0",
     "com.unity.timeline": "1.8.12",
     "com.unity.modules.accessibility": "1.0.0",
     "com.unity.modules.adaptiveperformance": "1.0.0",
@@ -26,6 +26,7 @@
     "com.unity.modules.particlesystem": "1.0.0",
     "com.unity.modules.physics": "1.0.0",
     "com.unity.modules.physics2d": "1.0.0",
+    "com.unity.modules.physicscore2d": "1.0.0",
     "com.unity.modules.screencapture": "1.0.0",
     "com.unity.modules.terrain": "1.0.0",
     "com.unity.modules.terrainphysics": "1.0.0",
@@ -42,7 +43,6 @@
     "com.unity.modules.vectorgraphics": "1.0.0",
     "com.unity.modules.vehicles": "1.0.0",
     "com.unity.modules.video": "1.0.0",
-    "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
     "com.unity.modules.xr": "1.0.0"
   }
